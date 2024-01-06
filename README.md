@@ -21,6 +21,12 @@ You are welcome to test it at
 https://sound-recognition-car-bus-tram.appaqc9h6e2d4.eu-central-1.cs.amazonlightsail.com/. 
 Be ready to upload approximately 5-second audio in wav format. 
 
+## Deployment 
+
+Application is deployed at AWS Lightsail containers using Docker and this [tutorial] (https://aws.amazon.com/blogs/aws/lightsail-containers-an-easy-way-to-run-your-containers-in-the-cloud/). 
+Try it at 
+https://sound-recognition-car-bus-tram.appaqc9h6e2d4.eu-central-1.cs.amazonlightsail.com/
+
 ## Technologies
 Project is created with:
 * Python 3.11.0 
