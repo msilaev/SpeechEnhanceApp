@@ -23,9 +23,8 @@ Be ready to upload approximately 5-second audio in wav format.
 
 ## Deployment 
 
-Application is deployed at AWS Lightsail containers using Docker and this [tutorial] (https://aws.amazon.com/blogs/aws/lightsail-containers-an-easy-way-to-run-your-containers-in-the-cloud/). 
-Try it at 
-https://sound-recognition-car-bus-tram.appaqc9h6e2d4.eu-central-1.cs.amazonlightsail.com/
+The application was deployed at AWS Lightsail containers using Docker and this [tutorial] (https://aws.amazon.com/blogs/aws/lightsail-containers-an-easy-way-to-run-your-containers-in-the-cloud/). 
+The deployment has been stopped now due to the hosting costs. It can be restored upon request. 
 
 ## Technologies
 Project is created with:
