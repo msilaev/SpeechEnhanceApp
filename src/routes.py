@@ -1,8 +1,8 @@
 from . import app
-from .result import Result
+#from .result import Result
 from flask import (render_template, request, url_for,
                    jsonify, redirect, send_from_directory)
-from src.features import Features
+#from src.features import Features
 from src.denoise import Denoise
 from src.upsample48 import Upsample48
 import os
