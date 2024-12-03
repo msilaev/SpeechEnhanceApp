@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+<body>
+    {% block app_content %}    
+    <div class="container d-flex flex-column align-items-center">
+    
+        <!-- Display Result -->
+        <div class="row mt-1">
+            <div class="col-md-12 text-center">
+                <p id="result" style="font-size: 24px;">
+                    {{ result }}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Denoise Button -->    
+        <div class="row mt-1">
+            <div class="col-md-12 text-center">
+                <button class="btn btn-secondary btn-lg px-5 py-3" 
+                   role="button" id="denoiseButton" style="font-size: 24px;">
+                   Denoise
+            </button>
+            </div>
+        </div>
+
+        <!-- Upsample Button -->    
+        <div class="row mt-1">
+            <div class="col-md-12 text-center">
+                <button class="btn btn-secondary btn-lg px-5 py-3" 
+                   role="button" id="upsampleButton" style="font-size: 24px;">
+                   Upsample 16->48 KHz
+                </button>
+            </div>
+        </div>
+
+        <!-- Start Over Button -->
+        <div class="row mt-1">
+            <div class="col-md-12 text-center">
+                <button class="btn btn-secondary btn-lg px-5 py-3" 
+                        role="button" id="startoverButton" style="font-size: 24px;">
+                        Try Again
+                </button>
+            </div>
+        </div>    
+
+    </div>    
+    {% endblock %}
+</body>
+
+
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+    $('#startoverButton').on('click', function() 
+    {
+        window.location.href = "{{ url_for('file_upload') }}"; // Redirect to start over on button click
+    });
+
+
+    $('#upsampleButton').on('click', function() 
+    {
+        window.location.href = "{{ url_for('upsample48') }}"; // Redirect to start over on button click
+    });
+
+
+    $('#denoiseButton').on('click', function() 
+    {
+        window.location.href = "{{ url_for('denoise') }}"; // Redirect to start over on button click
+    });
+
+
+
+</script>
+{% endblock %}
+

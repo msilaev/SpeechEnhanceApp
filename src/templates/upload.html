@@ -10,27 +10,27 @@
 
     <div class="row mt-1">
         <div class="col-md-12">
-    <h1>Upload audio file</h1>
+    <h2>Upload audio file in WAV or FLAC format</h2>
         </div>
     </div>
 
      <form method="POST"  enctype="multipart/form-data" onsubmit="return validateForm()">
      <div class="row mt-1">
         <div class="col-md-12">
-    <input type="file" name="file" id="fileInput">
-                </div>
+        <input type="file" name="file" id="fileInput">
+        </div>
     </div>
 
      <div class="row mt-1">
         <div class="col-md-12">
         <input type="submit" value="Upload">
-                 </div>
+        </div>
     </div>
-          </form>
+    </form>
 
     <div id="errorMessage" style="display: none; color: red;"></div>
 
-   </body>
+</body>
 {% endblock %}
 
 {% block scripts %}
@@ -38,7 +38,7 @@
 <script>
    function validateForm() {
     var fileInput = document.getElementById('fileInput');
-    var allowedExtensions = /(\.wav)$/i; // Regular expression to match .wav extension
+    var allowedExtensions = /(\.wav|\.flac)$/i; // Regular expression to match .wav extension
 
     if (fileInput.files.length === 0) {
         alert("Please choose a file.");
@@ -57,7 +57,7 @@
 
     // Check the file extension against the allowed extensions
     if (!allowedExtensions.test(selectedFile.name)) {
-        alert("Please select a WAV file.");
+        alert("Please select a WAV or FLAC file.");
         return false; // Prevent form submission if file extension is not .wav
     }
 

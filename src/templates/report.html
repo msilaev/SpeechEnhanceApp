@@ -1,36 +1,46 @@
 {% extends 'base.html' %}
 
 <body>
-{% block app_content %}
-
- <div class="container d-flex flex-column align-items-center">
-
-    <div class="row mt-1">
-        <div class="col-md-12">
-            <p id="result" style="font-size: 24px;">
-                Result: {{ result }}
-            </p>
+    {% block app_content %}    
+    <div class="container d-flex flex-column align-items-center">
+    
+    <!-- Display Result -->
+        <div class="row mt-1">
+            <div class="col-md-12 text-center">
+                <p id="result" style="font-size: 24px;">
+                    {{ result }}
+                </p>
+            </div>
+        </div>
+           
+    <!-- Download Button -->    
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <a class="btn btn-secondary btn-lg px-5 py-3" 
+               href="{{ url_for('download_file', filename='processed.wav') }}" 
+               role="button" style="font-size: 24px;">Download Processed File
+            </a>
         </div>
     </div>
 
-    <div class="row mt-1">
-        <div class="col-md-12">
-            <form class="form-inline">
-                <button class="btn-lg btn-outline-success" type="button" id="startoverButton">Try again</button>
-            </form>
+    <!-- Start Over Button -->
+    <div class="row mt-5">
+        <div class="col-md-12 text-center">
+            <button class="btn btn-secondary btn-lg px-5 py-3" 
+                    type="button" id="startoverButton" style="font-size: 24px;">Try Again
+            </button>
         </div>
-    </div>
-
-</div>
-
-{% endblock %}
-</body>
-
+    </div>    
+    </div>    
+    {% endblock %}
+    </body>
+    
 {% block scripts %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 
-    $('#startoverButton').on('click', function() {
+    $('#startoverButton').on('click', function() 
+    {
         window.location.href = "{{ url_for('file_upload') }}"; // Redirect to start over on button click
     });
 

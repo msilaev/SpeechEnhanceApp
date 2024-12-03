@@ -27,39 +27,8 @@
     display: flex;
 }
 
-.world {
-    border: 1px solid black;
-    border-collapse: collapse;
-}
-
-.table1 {
-    margin-left: 0px;
-    margin-bottom: 0px;
-
-
-}
-
-.table2 {
-    margin-left: -0px;
-    margin-bottom: -100px;
-}
 td {
     border: 1px solid black;
-}
-
-.cell {
-    padding: 2px;
-    background: whitesmoke;
-    width: 15px;
-    height: 15px;
-}
-
-.living-cell {
-    background: lightgreen;
-}
-
-.dead-cell {
-    background: darkred;
 }
 
 .content {
@@ -84,8 +53,6 @@ a, table {
     top: 5%;
     left: 60%;
 }
-
-
 
 
 .btn {
@@ -239,4 +206,12 @@ a, table {
 .button-column button,
 .button-column a {
     margin-bottom: 8px; /* Adjust the spacing between buttons as needed */
+}
+
+.custom-button {
+    display: block;
+    margin: 50px auto; /* Centers the button and adds vertical space */
+    width: 300px; /* Sets a fixed width */
+    padding: 15px 0; /* Adjusts vertical padding */
+    font-size: 24px; /* Makes the text larger */
 }
