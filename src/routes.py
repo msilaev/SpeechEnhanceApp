@@ -16,11 +16,11 @@ import soundfile as sf
 import numpy as np
 
 
-def get_spectrum(filename, n_fft=2048):
+def get_spectrum(filename, sr,  n_fft=2048):
 
     audio_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], filename)
     
-    x, sr = lb.load(audio_path, sr=app.config['SAMPLING_RATE'])
+    x, sr = lb.load(audio_path, sr=sr)
         
     S = lb.stft(x, n_fft = n_fft)
     p = np.angle(S)
@@ -155,10 +155,10 @@ def denoise(filename= "user.wav"):
 
         processed_file, processing_time, duration = process_audio(filename, 'denoise.onnx', 'processed.wav', app.config['SAMPLING_RATE'])
 
-        original_file_image = save_spectrum( get_spectrum("user.wav", n_fft=2048), sr = app.config['SAMPLING_RATE'], hop_length=2048 // 4,
+        original_file_image = save_spectrum( get_spectrum("user.wav", sr= 16000, n_fft=2048), sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
         
-        processed_file_image = save_spectrum( get_spectrum("processed.wav", n_fft=2048), sr = app.config['SAMPLING_RATE'], hop_length=2048 // 4,
+        processed_file_image = save_spectrum( get_spectrum("processed.wav", sr= 16000, n_fft=2048), sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_processed.png', type='original')  
 
         return redirect(url_for('report', result=f'Denoising complete! Processing time: {processing_time:.2f} s, Audio duration: {duration:.2f} s' ))
@@ -174,10 +174,10 @@ def upsample48(filename = "user.wav"):
         
         processed_file, processing_time, duration = process_audio(filename, 'upsample48.onnx', 'processed.wav', 48000)
         
-        original_file_image = save_spectrum( get_spectrum("user.wav", n_fft=2048), sr = app.config['SAMPLING_RATE'], hop_length=2048 // 4,
+        original_file_image = save_spectrum( get_spectrum("user.wav", sr = 48000, n_fft=3*2048), sr = 48000, hop_length=3*2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
         
-        processed_file_image = save_spectrum( get_spectrum("processed.wav", n_fft=2048), sr = app.config['SAMPLING_RATE'], hop_length=2048 // 4,
+        processed_file_image = save_spectrum( get_spectrum("processed.wav", sr = 48000, n_fft=3*2048), sr = 48000, hop_length=3*2048 // 4,
             output_filename = 'spectrogram_processed.png', type='original')  
         
         return redirect(url_for('report', 
@@ -194,10 +194,10 @@ def upsample16(filename = "user.wav"):
 
         processed_file, processing_time, duration = process_audio(filename, 'upsample16.onnx', 'processed.wav', 16000)       
 
-        original_file_image = save_spectrum( get_spectrum("user.wav", n_fft=2048), sr = app.config['SAMPLING_RATE'], hop_length=2048 // 4,
+        original_file_image = save_spectrum( get_spectrum("user.wav", sr = 16000 , n_fft=2048), sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
         
-        processed_file_image = save_spectrum( get_spectrum("processed.wav", n_fft=2048), sr = app.config['SAMPLING_RATE'], hop_length=2048 // 4,
+        processed_file_image = save_spectrum( get_spectrum("processed.wav", sr = 16000, n_fft=2048), sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_processed.png', type='original')  
         
         return redirect(url_for('report', result=f'Upsampling complete! Processing time {processing_time:.2f} s, duration {duration:.2f} s'))
