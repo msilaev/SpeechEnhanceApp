@@ -26,11 +26,23 @@
         <div class="row mt-1">
             <div class="col-md-12 text-center">
                 <button class="btn btn-secondary btn-lg px-5 py-3" 
-                   role="button" id="upsampleButton" style="font-size: 24px;">
+                   role="button" id="upsampleButton48" style="font-size: 24px;">
                    Upsample 16->48 KHz
                 </button>
             </div>
+            
         </div>
+
+        <!-- Upsample Button -->    
+        <div class="row mt-1">
+            <div class="col-md-12 text-center">
+                <button class="btn btn-secondary btn-lg px-5 py-3" 
+                   role="button" id="upsampleButton16" style="font-size: 24px;">
+                   Upsample 4->16 KHz
+                </button>
+            </div>
+        </div>
+        
 
         <!-- Start Over Button -->
         <div class="row mt-1">
@@ -41,7 +53,6 @@
                 </button>
             </div>
         </div>    
-
     </div>    
     {% endblock %}
 </body>
@@ -57,9 +68,14 @@
     });
 
 
-    $('#upsampleButton').on('click', function() 
+    $('#upsampleButton48').on('click', function() 
     {
         window.location.href = "{{ url_for('upsample48') }}"; // Redirect to start over on button click
+    });
+
+    $('#upsampleButton16').on('click', function() 
+    {
+        window.location.href = "{{ url_for('upsample16') }}"; // Redirect to start over on button click
     });
 
 

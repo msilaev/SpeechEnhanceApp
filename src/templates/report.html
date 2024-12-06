@@ -21,10 +21,36 @@
                role="button" style="font-size: 24px;">Download Processed File
             </a>
         </div>
+      
     </div>
 
+    <div class="row mt-5 align-items-center text-center">
+        <!-- Original Audio -->
+        <div class="col-md-6">
+            <label for="user-audio" style="font-size: 18px; display: block;">Original Audio</label>
+            <audio id="user-audio" controls style="width: 100%; margin-bottom: 20px;">
+                <source src="{{ url_for('download_file', filename='user.wav') }}" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+            <img src="{{ url_for('download_file', filename='spectrogram_original.png') }}" 
+            alt="Original Audio Spectrogram" style="width: 100%; margin-top: 10px;">
+        </div>
+    
+        <!-- Processed Audio -->
+        <div class="col-md-6">
+            <label for="processed-audio" style="font-size: 18px; display: block;">Processed Audio</label>
+            <audio id="processed-audio" controls style="width: 100%; margin-bottom: 20px;">
+                <source src="{{ url_for('download_file', filename='processed.wav') }}" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+            <img src="{{ url_for('download_file', filename='spectrogram_processed.png') }}" 
+            alt="Processed Audio Spectrogram" style="width: 100%; margin-top: 10px;">
+        </div>
+    </div>
+    
+
     <!-- Start Over Button -->
-    <div class="row mt-5">
+    <div class="row mt-7">
         <div class="col-md-12 text-center">
             <button class="btn btn-secondary btn-lg px-5 py-3" 
                     type="button" id="startoverButton" style="font-size: 24px;">Try Again

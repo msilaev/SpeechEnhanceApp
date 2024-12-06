@@ -12,17 +12,17 @@ import time
 
 PATCH_SIZE = 8192
 
-class Upsample48:
+class Upsample16:
 
     def __init__(self, audio_data):
 
         self.y = audio_data
-                    
+        #self.y = librosa.resample(audio_data, orig_sr = 16000, target_sr = 4000)
+        
+            
     def predict(self, model_path):       
 
         x_noisy = self.y
-        x_noisy = librosa.resample(x_noisy, orig_sr = 16000, target_sr = 48000)
-      
         n_patches = x_noisy.shape[0] // PATCH_SIZE
         n_samples = x_noisy.shape[0]
         padding_needed = ((n_patches + 1) * PATCH_SIZE) - n_samples
@@ -30,14 +30,14 @@ class Upsample48:
         x_noisy = np.pad(x_noisy, ((0, padding_needed)), mode='constant')
 
         print(self.y.shape, x_noisy.shape)
-        
-        #x_noisy_spline = librosa.resample(x_noisy, orig_sr = 16000, target_sr = 48000)
-        x_noisy_spline = decimate(x_noisy, 3)        
-        x_noisy_spline = self.spline_up(x_noisy_spline , r = 3)
+
+
+        x_noisy_spline = decimate(x_noisy, 4)        
+        x_noisy_spline = self.spline_up(x_noisy_spline , r = 4)
         
         ort_session = ort.InferenceSession(model_path)
 
-        
+       
         P = []
         X = []
 
@@ -67,7 +67,7 @@ class Upsample48:
 
         #print("duration",  librosa.get_duration(y=x_noisy, sr=16000))
 
-        return predictions, x_noisy, end_time - start_time,  librosa.get_duration(y=predictions, sr=48000)
+        return predictions, x_noisy, end_time - start_time,  librosa.get_duration(y=predictions, sr=16000)
     
     @staticmethod
     def spline_up(x, r):
@@ -85,16 +85,15 @@ class Upsample48:
          return x_sp.astype(np.float32)
 
 
-
 if __name__ == "__main__":
 
     audio = "../street_10dB/10dB/sp01_street_sn10.wav"
  
-    y, sr = lb.load(audio, sr = 48000)
+    y, sr = lb.load(audio, sr = 16000)
 
     x_noisy = y.flatten()
 
-    model_path = "model/upsample48.onnx"
+    model_path = "model/upsample16.onnx"
 
     ort_session = ort.InferenceSession(model_path)
 

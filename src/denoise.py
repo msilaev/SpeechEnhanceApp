@@ -19,13 +19,19 @@ class Denoise:
     def predict(self, model_path):       
 
         x_noisy = self.y
+        n_patches = x_noisy.shape[0] // PATCH_SIZE
+
+        n_samples = x_noisy.shape[0]
+        padding_needed = ((n_patches + 1) * PATCH_SIZE) - n_samples
+
+        x_noisy = np.pad(x_noisy, ((0, padding_needed)), mode='constant')
+
+        print((self.y).shape, x_noisy.shape)
 
         ort_session = ort.InferenceSession(model_path)
-
-        n_patches = x_noisy.shape[0] // PATCH_SIZE
-        x_noisy = np.pad(x_noisy, ((0, (n_patches+1)*PATCH_SIZE)), mode='constant')
-
+       
         P = []
+        X = []
 
         start_time = time.time()
        
@@ -42,16 +48,18 @@ class Denoise:
             predictions = ort_session.run([output_name], inputs)
 
             P.append( np.squeeze(predictions))
+            X.append(lr_patch)
 
             #print(np.squeeze(predictions).shape)            
 
         predictions = (np.array(np.concatenate(P))).flatten()
+        input = (np.array(np.concatenate(X))).flatten()
        
         end_time = time.time()
 
         #print("duration",  librosa.get_duration(y=x_noisy, sr=16000))
 
-        return predictions, end_time - start_time,  librosa.get_duration(y=predictions, sr=16000)
+        return predictions, x_noisy, end_time - start_time,  librosa.get_duration(y=predictions, sr=16000)
 
         
 if __name__ == "__main__":
@@ -86,7 +94,7 @@ if __name__ == "__main__":
 
             P.append( np.squeeze(predictions))
 
-            print(np.squeeze(predictions).shape)            
+            #print(np.squeeze(predictions).shape)            
 
     predictions = np.array(np.concatenate(P))
     
