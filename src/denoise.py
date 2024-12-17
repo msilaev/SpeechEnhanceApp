@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     x_noisy = y.flatten()
 
-    model_path = "model/denoise.onnx"
+    model_path = "model/denoise/sr16000/gan_alt_5/denoise.onnx"
 
     ort_session = ort.InferenceSession(model_path)
 

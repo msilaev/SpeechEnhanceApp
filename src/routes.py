@@ -115,7 +115,7 @@ def file_upload():
         if file.filename == '' or (not (file.filename.endswith('.wav') or file.filename.endswith('.flac'))):
             return jsonify({'error': 'Please upload a WAV or FLAC file'})
 
-        max_file_size = 10 * 1024 * 1024
+        max_file_size = 50 * 1024 * 1024
 
         try:
             filename = secure_filename(file.filename)
@@ -133,7 +133,7 @@ def file_upload():
                 file_size = os.path.getsize(audio)
 
                 if (file_size > max_file_size):
-                    return jsonify({'error': "File size exceeds the limit of 10 MB!"})
+                    return jsonify({'error': "File size exceeds the limit of 50 MB!"})
             
             return redirect(url_for('upload_complete', result = "Upload complete" ))
            
@@ -153,7 +153,7 @@ def denoise(filename= "user.wav"):
     
     try:
 
-        processed_file, processing_time, duration = process_audio(filename, 'denoise.onnx', 'processed.wav', app.config['SAMPLING_RATE'])
+        processed_file, processing_time, duration = process_audio(filename, 'denoise_gan.onnx', 'processed.wav', app.config['SAMPLING_RATE'])
 
         original_file_image = save_spectrum( get_spectrum("user.wav", sr= 16000, n_fft=2048), sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
@@ -192,7 +192,7 @@ def upsample16(filename = "user.wav"):
 
     try:
 
-        processed_file, processing_time, duration = process_audio(filename, 'upsample16.onnx', 'processed.wav', 16000)       
+        processed_file, processing_time, duration = process_audio(filename, 'upsample16_gan_500.onnx', 'processed.wav', 16000)       
 
         original_file_image = save_spectrum( get_spectrum("user.wav", sr = 16000 , n_fft=2048), sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
