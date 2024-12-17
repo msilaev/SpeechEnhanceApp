@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     x_noisy = y.flatten()
 
-    model_path = "model/upsample16.onnx"
+    model_path = "models/upsample16_gan_200.onnx"
 
     ort_session = ort.InferenceSession(model_path)
 

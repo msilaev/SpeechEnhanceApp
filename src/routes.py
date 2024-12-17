@@ -76,11 +76,11 @@ def process_audio(filename, model_file, output_filename, target_sr):
         
         model_path = os.path.join(app.root_path, app.config['MODEL_FOLDER'], model_file)
 
-        if model_file == 'denoise.onnx':
+        if model_file == 'denoise_gan.onnx':
             processor = Denoise(y)
-        elif model_file == 'upsample48.onnx':
+        elif model_file == 'upsample48_gan_500.onnx':
             processor = Upsample48(y)
-        elif model_file == 'upsample16.onnx':
+        elif model_file == 'upsample16_gan_200.onnx':
             processor = Upsample16(y)    
         else:
             raise ValueError("Invalid model specified.")
@@ -172,7 +172,7 @@ def upsample48(filename = "user.wav"):
     
     try:
         
-        processed_file, processing_time, duration = process_audio(filename, 'upsample48.onnx', 'processed.wav', 48000)
+        processed_file, processing_time, duration = process_audio(filename, 'upsample48_gan_500.onnx', 'processed.wav', 48000)
         
         original_file_image = save_spectrum( get_spectrum("user.wav", sr = 48000, n_fft=3*2048), sr = 48000, hop_length=3*2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
@@ -192,7 +192,7 @@ def upsample16(filename = "user.wav"):
 
     try:
 
-        processed_file, processing_time, duration = process_audio(filename, 'upsample16_gan_500.onnx', 'processed.wav', 16000)       
+        processed_file, processing_time, duration = process_audio(filename, 'upsample16_gan_200.onnx', 'processed.wav', 16000)       
 
         original_file_image = save_spectrum( get_spectrum("user.wav", sr = 16000 , n_fft=2048), sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
