@@ -34,8 +34,10 @@ class Upsample16:
 
         x_noisy_spline = decimate(x_noisy, 4)        
         #x_noisy_spline = librosa.resample(x_noisy, orig_sr = 16000, target_sr = 4000)
+        x_noisy = librosa.resample(x_noisy_spline, orig_sr=4000, target_sr=16000)
       
         x_noisy_spline = self.spline_up(x_noisy_spline , r = 4)
+
         
         ort_session = ort.InferenceSession(model_path)
 
@@ -69,7 +71,7 @@ class Upsample16:
 
         #print("duration",  librosa.get_duration(y=x_noisy, sr=16000))
 
-        return predictions, x_noisy_spline, end_time - start_time,  librosa.get_duration(y=predictions, sr=16000)
+        return predictions, x_noisy, end_time - start_time,  librosa.get_duration(y=predictions, sr=16000)
     
     @staticmethod
     def spline_up(x, r):
@@ -95,7 +97,8 @@ if __name__ == "__main__":
 
     x_noisy = y.flatten()
 
-    model_path = "models/upsample16_gan_200.onnx"
+    model_path = "models/upsample16_gan_500.onnx"
+    #model_path = "models/upsample16_gan_500.onnx"
 
     ort_session = ort.InferenceSession(model_path)
 
