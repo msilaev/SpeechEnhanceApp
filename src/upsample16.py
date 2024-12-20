@@ -110,19 +110,19 @@ if __name__ == "__main__":
        
     for i in range(0, n_patches+1, 1):
 
-            lr_patch = np.array(x_noisy[i * PATCH_SIZE : (i+1)* PATCH_SIZE ])                  
+        lr_patch = np.array(x_noisy[i * PATCH_SIZE : (i+1)* PATCH_SIZE ])
          
-            input_data = np.expand_dims(lr_patch, axis=0)  # Add batch dimension
-            input_data = np.expand_dims(input_data, axis=2)  # Add channel dimension
+        input_data = np.expand_dims(lr_patch, axis=0)  # Add batch dimension
+        input_data = np.expand_dims(input_data, axis=2)  # Add channel dimension
                       
-            inputs = {ort_session.get_inputs()[0].name: input_data}                 
+        inputs = {ort_session.get_inputs()[0].name: input_data}
            
-            output_name = ort_session.get_outputs()[0].name
-            predictions = ort_session.run([output_name], inputs)
+        output_name = ort_session.get_outputs()[0].name
+        predictions = ort_session.run([output_name], inputs)
 
-            P.append( np.squeeze(predictions))
+        P.append( np.squeeze(predictions))
 
-            print(np.squeeze(predictions).shape)            
+        print(np.squeeze(predictions).shape)
 
     predictions = np.array(np.concatenate(P))
     

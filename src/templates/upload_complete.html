@@ -30,7 +30,6 @@
                    Upsample 16->48 KHz
                 </button>
             </div>
-            
         </div>
 
         <!-- Upsample Button -->    
@@ -42,7 +41,16 @@
                 </button>
             </div>
         </div>
-        
+
+         <!-- Upsample Button -->
+        <div class="row mt-1">
+            <div class="col-md-12 text-center">
+                <button class="btn btn-secondary btn-lg px-5 py-3"
+                   role="button" id="upsampleButton448" style="font-size: 24px;">
+                   Upsample 4->48 KHz
+                </button>
+            </div>
+        </div>
 
         <!-- Start Over Button -->
         <div class="row mt-1">
@@ -67,10 +75,14 @@
         window.location.href = "{{ url_for('file_upload') }}"; // Redirect to start over on button click
     });
 
-
     $('#upsampleButton48').on('click', function() 
     {
         window.location.href = "{{ url_for('upsample48') }}"; // Redirect to start over on button click
+    });
+
+    $('#upsampleButton448').on('click', function()
+    {
+        window.location.href = "{{ url_for('upsample448') }}"; // Redirect to start over on button click
     });
 
     $('#upsampleButton16').on('click', function() 
@@ -78,12 +90,10 @@
         window.location.href = "{{ url_for('upsample16') }}"; // Redirect to start over on button click
     });
 
-
     $('#denoiseButton').on('click', function() 
     {
         window.location.href = "{{ url_for('denoise') }}"; // Redirect to start over on button click
     });
-
 
 
 </script>

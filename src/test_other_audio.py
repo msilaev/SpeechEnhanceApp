@@ -26,7 +26,6 @@ def make_parser():
   parser.add_argument('--patch_size', type=int, default=8192,
                             help='Size of patches over which the model operates')
 
-
   return parser
 
 def eval(args):

@@ -18,7 +18,7 @@ class Upsample48:
 
         self.y = audio_data
                     
-    def predict(self, model_path):       
+    def predict(self, model_path):
 
         x_noisy = self.y
         x_noisy = librosa.resample(x_noisy, orig_sr = 16000, target_sr = 48000)
@@ -34,10 +34,8 @@ class Upsample48:
         #x_noisy_spline = librosa.resample(x_noisy, orig_sr = 16000, target_sr = 48000)
         x_noisy_spline = decimate(x_noisy, 3)        
         x_noisy_spline = self.spline_up(x_noisy_spline , r = 3)
-        
         ort_session = ort.InferenceSession(model_path)
 
-        
         P = []
         X = []
 
@@ -84,8 +82,6 @@ class Upsample48:
 
          return x_sp.astype(np.float32)
 
-
-
 if __name__ == "__main__":
 
     audio = "../street_10dB/10dB/sp01_street_sn10.wav"
@@ -106,19 +102,19 @@ if __name__ == "__main__":
        
     for i in range(0, n_patches+1, 1):
 
-            lr_patch = np.array(x_noisy[i * PATCH_SIZE : (i+1)* PATCH_SIZE ])                  
+        lr_patch = np.array(x_noisy[i * PATCH_SIZE : (i+1)* PATCH_SIZE ])
          
-            input_data = np.expand_dims(lr_patch, axis=0)  # Add batch dimension
-            input_data = np.expand_dims(input_data, axis=2)  # Add channel dimension
+        input_data = np.expand_dims(lr_patch, axis=0)  # Add batch dimension
+        input_data = np.expand_dims(input_data, axis=2)  # Add channel dimension
                       
-            inputs = {ort_session.get_inputs()[0].name: input_data}                 
+        inputs = {ort_session.get_inputs()[0].name: input_data}
            
-            output_name = ort_session.get_outputs()[0].name
-            predictions = ort_session.run([output_name], inputs)
+        output_name = ort_session.get_outputs()[0].name
+        predictions = ort_session.run([output_name], inputs)
 
-            P.append( np.squeeze(predictions))
+        P.append( np.squeeze(predictions))
 
-            print(np.squeeze(predictions).shape)            
+        print(np.squeeze(predictions).shape)
 
     predictions = np.array(np.concatenate(P))
     

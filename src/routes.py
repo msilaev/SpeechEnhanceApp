@@ -5,6 +5,7 @@ from flask import (render_template, request, url_for,
 from src.denoise import Denoise
 from src.upsample48 import Upsample48
 from src.upsample16 import Upsample16
+from src.upsample_4_48 import Upsample448
 
 import os
 import joblib
@@ -14,7 +15,6 @@ import matplotlib.pyplot as plt
 import librosa as lb
 import soundfile as sf
 import numpy as np
-
 
 def get_spectrum(filename, sr,  n_fft=2048):
 
@@ -28,7 +28,6 @@ def get_spectrum(filename, sr,  n_fft=2048):
     S_dB = lb.amplitude_to_db(np.abs(S), ref=np.max)
     
     return S_dB
-
 
 def save_spectrum(S, sr, hop_length, output_filename='spectrogram.png', type = "original"):
     
@@ -65,29 +64,56 @@ def save_spectrum(S, sr, hop_length, output_filename='spectrogram.png', type = "
     
     return output_path
 
-
-
-def process_audio(filename, model_file, output_filename, target_sr):
+def process_audio(filename, model_type, output_filename, target_sr):
 
     try:
         audio_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], filename)
 
         y, sr = lb.load(audio_path, sr=app.config['SAMPLING_RATE'])
-        
-        model_path = os.path.join(app.root_path, app.config['MODEL_FOLDER'], model_file)
 
-        if model_file == 'denoise_gan.onnx':
+        #model_file = 'denoise_gan.onnx'
+        #model_file_16 = 'upsample16_gan_500.onnx'
+        #model_file_48 = 'upsample48_gan_500.onnx'
+        flag = 0
+
+        if model_type == 'denoise_gan':
+
+            model_file = 'denoise_gan.onnx'
             processor = Denoise(y)
-        elif model_file == 'upsample48_gan_90.onnx':
+            model_path = os.path.join(app.root_path, app.config['MODEL_FOLDER'], model_file)
+
+        elif model_type == 'upsample48_gan':
+
+            model_file = 'upsample48_gan_500.onnx'
             processor = Upsample48(y)
-        elif model_file == 'upsample16_gan_500.onnx':
-            processor = Upsample16(y)    
+            model_path = os.path.join(app.root_path, app.config['MODEL_FOLDER'], model_file)
+
+        elif model_type == 'upsample16_gan':
+
+            model_file = 'upsample16_gan_500.onnx'
+            processor = Upsample16(y)
+            model_path = os.path.join(app.root_path, app.config['MODEL_FOLDER'], model_file)
+
+        elif model_type == 'upsample4_48':
+
+            flag = 1
+
+            model_file_16 = 'upsample16_gan_500.onnx'
+            model_file_48 = 'upsample48_gan_500.onnx'
+            model_path_16 = os.path.join(app.root_path, app.config['MODEL_FOLDER'], model_file_16)
+            model_path_48 = os.path.join(app.root_path, app.config['MODEL_FOLDER'], model_file_48)
+
+            processor = Upsample448(y)
+
         else:
             #print(model_file)
             raise ValueError("Invalid model specified.")
-
         try:
-            processed_audio, input_audio, processing_time, duration = processor.predict(model_path)
+            if flag == 0:
+                processed_audio, input_audio, processing_time, duration = processor.predict(model_path)
+            if flag == 1:
+                #print(model_path_48, model_path_16)
+                processed_audio, input_audio, processing_time, duration = processor.predict(model_path_16, model_path_48)
         except Exception as a:
             raise RuntimeError(f"processor.predict failed: {str(a)}")
 
@@ -104,7 +130,6 @@ def process_audio(filename, model_file, output_filename, target_sr):
     except Exception as e:
 
         raise RuntimeError(f"Audio processing failed: {str(e)}")
-
 
 @app.route('/', methods=['GET', 'POST'])
 def file_upload():
@@ -154,16 +179,42 @@ def denoise(filename= "user.wav"):
     
     try:
 
-        processed_file, processing_time, duration = process_audio(filename, 'denoise_gan.onnx', 'processed.wav', app.config['SAMPLING_RATE'])
+        processed_file, processing_time, duration = process_audio(filename, 'denoise_gan', 'processed.wav',
+                                                                  app.config['SAMPLING_RATE'])
 
-        original_file_image = save_spectrum( get_spectrum("user.wav", sr= 16000, n_fft=2048), sr = 16000, hop_length=2048 // 4,
+        original_file_image = save_spectrum( get_spectrum("user.wav", sr= 16000, n_fft=2048),
+                                             sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
         
-        processed_file_image = save_spectrum( get_spectrum("processed.wav", sr= 16000, n_fft=2048), sr = 16000, hop_length=2048 // 4,
+        processed_file_image = save_spectrum( get_spectrum("processed.wav", sr= 16000, n_fft=2048),
+                                              sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_processed.png', type='original')  
 
-        return redirect(url_for('report', result=f'Denoising complete! Processing time: {processing_time:.2f} s, Audio duration: {duration:.2f} s' ))
+        return redirect(url_for('report', result=f'Denoising complete! Processing time: '
+                                                 f'{processing_time:.2f} s, Audio duration: {duration:.2f} s' ))
       
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/upsample448')
+def upsample448(filename="user.wav"):
+    try:
+
+        processed_file, processing_time, duration = process_audio(filename, 'upsample4_48', 'processed.wav', 48000)
+
+        original_file_image = save_spectrum(get_spectrum("user.wav", sr=48000, n_fft=3 * 2048), sr=48000,
+                                            hop_length=3 * 2048 // 4,
+                                            output_filename='spectrogram_original.png', type='original')
+
+        processed_file_image = save_spectrum(get_spectrum("processed.wav", sr=48000, n_fft=3 * 2048), sr=48000,
+                                             hop_length=3 * 2048 // 4,
+                                             output_filename='spectrogram_processed.png', type='original')
+
+        return redirect(url_for('report',
+                                result=f'Upsampling complete! Processing time {processing_time:.2f} s, '
+                                       f'duration {duration:.2f} s'))
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -173,16 +224,19 @@ def upsample48(filename = "user.wav"):
     
     try:
         
-        processed_file, processing_time, duration = process_audio(filename, 'upsample48_gan_90.onnx', 'processed.wav', 48000)
+        processed_file, processing_time, duration = process_audio(filename, 'upsample48_gan', 'processed.wav', 48000)
         
-        original_file_image = save_spectrum( get_spectrum("user.wav", sr = 48000, n_fft=3*2048), sr = 48000, hop_length=3*2048 // 4,
+        original_file_image = save_spectrum( get_spectrum("user.wav", sr = 48000,
+                                                          n_fft=3*2048), sr = 48000, hop_length=3*2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
         
-        processed_file_image = save_spectrum( get_spectrum("processed.wav", sr = 48000, n_fft=3*2048), sr = 48000, hop_length=3*2048 // 4,
+        processed_file_image = save_spectrum( get_spectrum("processed.wav", sr = 48000,
+                                                           n_fft=3*2048), sr = 48000, hop_length=3*2048 // 4,
             output_filename = 'spectrogram_processed.png', type='original')  
         
         return redirect(url_for('report', 
-                                result=f'Upsampling complete! Processing time {processing_time:.2f} s, duration {duration:.2f} s'))
+                                result=f'Upsampling complete! Processing time {processing_time:.2f} s, '
+                                       f'duration {duration:.2f} s'))
        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -193,15 +247,18 @@ def upsample16(filename = "user.wav"):
 
     try:
 
-        processed_file, processing_time, duration = process_audio(filename, 'upsample16_gan_500.onnx', 'processed.wav', 16000)
+        processed_file, processing_time, duration = process_audio(filename, 'upsample16_gan', 'processed.wav', 16000)
 
-        original_file_image = save_spectrum( get_spectrum("user.wav", sr = 16000 , n_fft=2048), sr = 16000, hop_length=2048 // 4,
+        original_file_image = save_spectrum( get_spectrum("user.wav", sr = 16000 ,
+                                                          n_fft=2048), sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_original.png', type='original')          
         
-        processed_file_image = save_spectrum( get_spectrum("processed.wav", sr = 16000, n_fft=2048), sr = 16000, hop_length=2048 // 4,
+        processed_file_image = save_spectrum( get_spectrum("processed.wav", sr = 16000,
+                                                           n_fft=2048), sr = 16000, hop_length=2048 // 4,
             output_filename = 'spectrogram_processed.png', type='original')  
         
-        return redirect(url_for('report', result=f'Upsampling complete! Processing time {processing_time:.2f} s, duration {duration:.2f} s'))
+        return redirect(url_for('report', result=f'Upsampling complete! Processing time {processing_time:.2f} s, '
+                                                 f'duration {duration:.2f} s'))
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -210,7 +267,6 @@ def upsample16(filename = "user.wav"):
 @app.route('/report/<result>')
 def report(result):
     return render_template("report.html", result=result)
-
 
 @app.route('/download/<filename>')
 def download_file(filename):
