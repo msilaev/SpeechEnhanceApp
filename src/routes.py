@@ -69,7 +69,8 @@ def process_audio(filename, model_type, output_filename, target_sr):
     try:
         audio_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], filename)
 
-        y, sr = lb.load(audio_path, sr=app.config['SAMPLING_RATE'])
+
+        #y, sr = lb.load(audio_path, sr=app.config['SAMPLING_RATE'])
 
         #model_file = 'denoise_gan.onnx'
         #model_file_16 = 'upsample16_gan_500.onnx'
@@ -77,12 +78,16 @@ def process_audio(filename, model_type, output_filename, target_sr):
         flag = 0
 
         if model_type == 'denoise_gan':
+            y, sr = lb.load(audio_path, sr=app.config['SAMPLING_RATE'])
 
             model_file = 'denoise_gan.onnx'
             processor = Denoise(y)
             model_path = os.path.join(app.root_path, app.config['MODEL_FOLDER'], model_file)
 
         elif model_type == 'upsample48_gan':
+            y, sr = lb.load(audio_path, sr=48000)
+            #y, sr = lb.load(audio_path, sr=None)
+            #print(sr)
 
             model_file = 'upsample48_gan_500.onnx'
             processor = Upsample48(y)
@@ -90,11 +95,15 @@ def process_audio(filename, model_type, output_filename, target_sr):
 
         elif model_type == 'upsample16_gan':
 
+            y, sr = lb.load(audio_path, sr=app.config['SAMPLING_RATE'])
+
             model_file = 'upsample16_gan_500.onnx'
             processor = Upsample16(y)
             model_path = os.path.join(app.root_path, app.config['MODEL_FOLDER'], model_file)
 
         elif model_type == 'upsample4_48':
+
+            y, sr = lb.load(audio_path, sr=app.config['SAMPLING_RATE'])
 
             flag = 1
 

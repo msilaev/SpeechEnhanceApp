@@ -18,37 +18,28 @@ class Upsample16:
 
         self.y = audio_data
         #self.y = librosa.resample(audio_data, orig_sr = 16000, target_sr = 4000)
-        
-            
-    def predict(self, model_path):       
+
+    def predict(self, model_path):
 
         x_noisy = self.y
-        n_patches = x_noisy.shape[0] // PATCH_SIZE
-        n_samples = x_noisy.shape[0]
-        padding_needed = ((n_patches + 1) * PATCH_SIZE) - n_samples
 
-        x_noisy = np.pad(x_noisy, ((0, padding_needed)), mode='constant')
+        padding_needed = PATCH_SIZE - (x_noisy.shape[0] % PATCH_SIZE)
 
-        print(self.y.shape, x_noisy.shape)
+        x_noisy = np.pad(x_noisy, (0, padding_needed), 'constant', constant_values=(0, 0))
 
+        x_noisy_spline = decimate(x_noisy, 4)
+        x_noisy_spline = self.spline_up(x_noisy_spline, 4)
 
-        x_noisy_spline = decimate(x_noisy, 4)        
-        #x_noisy_spline = librosa.resample(x_noisy, orig_sr = 16000, target_sr = 4000)
-        x_noisy = librosa.resample(x_noisy_spline, orig_sr=4000, target_sr=16000)
-      
-        x_noisy_spline = self.spline_up(x_noisy_spline , r = 4)
+        n_patches = x_noisy_spline.shape[0] // PATCH_SIZE
 
-        
         ort_session = ort.InferenceSession(model_path)
 
-       
         P = []
         X = []
 
         start_time = time.time()
-       
-        for i in range(0, n_patches+1, 1):
 
+        for i in range(0, n_patches, 1):
             lr_patch = np.array(x_noisy_spline[i * PATCH_SIZE : (i+1)* PATCH_SIZE ])                  
          
             input_data = np.expand_dims(lr_patch, axis=0)  # Add batch dimension
@@ -87,7 +78,6 @@ class Upsample16:
          x_sp = interpolate.splev(i_hr, f)
 
          return x_sp.astype(np.float32)
-
 
 if __name__ == "__main__":
 

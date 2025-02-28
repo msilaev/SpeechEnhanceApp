@@ -21,19 +21,17 @@ class Upsample48:
     def predict(self, model_path):
 
         x_noisy = self.y
-        x_noisy = librosa.resample(x_noisy, orig_sr = 16000, target_sr = 48000)
-      
-        n_patches = x_noisy.shape[0] // PATCH_SIZE
-        n_samples = x_noisy.shape[0]
-        padding_needed = ((n_patches + 1) * PATCH_SIZE) - n_samples
 
-        x_noisy = np.pad(x_noisy, ((0, padding_needed)), mode='constant')
+        padding_needed = PATCH_SIZE - (x_noisy.shape[0] % PATCH_SIZE)
 
-        print(self.y.shape, x_noisy.shape)
-        
-        #x_noisy_spline = librosa.resample(x_noisy, orig_sr = 16000, target_sr = 48000)
-        x_noisy_spline = decimate(x_noisy, 3)        
-        x_noisy_spline = self.spline_up(x_noisy_spline , r = 3)
+        x_noisy = np.pad(x_noisy, (0, padding_needed), 'constant', constant_values=(0, 0))
+
+        x_noisy_spline = decimate(x_noisy, 3)
+        #x_noisy_spline = x_noisy
+        x_noisy_spline = self.spline_up(x_noisy_spline, 3)
+
+        n_patches = x_noisy_spline.shape[0] // PATCH_SIZE
+
         ort_session = ort.InferenceSession(model_path)
 
         P = []
@@ -41,7 +39,7 @@ class Upsample48:
 
         start_time = time.time()
        
-        for i in range(0, n_patches+1, 1):
+        for i in range(0, n_patches, 1):
 
             lr_patch = np.array(x_noisy_spline[i * PATCH_SIZE : (i+1)* PATCH_SIZE ])                  
          
