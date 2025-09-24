@@ -63,7 +63,7 @@ class Upsample48:
 
         #print("duration",  librosa.get_duration(y=x_noisy, sr=16000))
 
-        return predictions, x_noisy, end_time - start_time,  librosa.get_duration(y=predictions, sr=48000)
+        return predictions, x_noisy_spline, end_time - start_time,  librosa.get_duration(y=predictions, sr=48000)
     
     @staticmethod
     def spline_up(x, r):
