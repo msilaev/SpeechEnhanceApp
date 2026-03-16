@@ -64,10 +64,12 @@ jobs:
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
+          key: ${{ secrets.VM_SSH_KEY }}          
           script: |
             cd ~/SpeechEnhanceApp
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
             source venv/bin/activate
             pip install -r requirements.txt --quiet
             sudo systemctl restart speechenhance
+
