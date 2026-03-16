@@ -1,50 +1,74 @@
-# Speech enhancement
-<!-- ![Denoising and band extension of speech](SoundRecScreenshot.jpg){width=50%} -->
+# Speech Enhancement
 
+## Table of Contents
 
-## Table of contents
-* [General info](#general-info)
-* [Deployment](#deployment)
-* [Technologies](#technologies)
-* [Setup](#setup)
+- [General Info](#general-info)
+- [Usage](#usage)
+- [Deployment](#deployment)
+- [Technologies](#technologies)
 
-## General info
+## General Info
 
-The goal of this project is to develop a simple app demonstrating ML models to denosie and expand bandwidth (from 16 KHz to 48 KHz) of speech signals. 
-This app uses inference with the help of  models in ONNX format.  
-Be ready to upload audio in WAV or FLAC formats. 
+A web app demonstrating ML models for speech denoising and bandwidth extension (16 kHz → 48 kHz). Inference is performed using ONNX format models. Accepts audio in WAV or FLAC format.
 
 ## Usage
-On the local machine:
 
-`pip install -r requirements.txt`
+**Local machine:**
 
-Download models and put then folder ```models```
+```bash
+pip install -r requirements.txt
+python app.py
+```
 
-[denoise.onnx] (https://drive.google.com/file/d/1gpITH4NrutQGQfBuakMW6odlVduCz2F2/view?usp=sharing)
-[upsample48.onnx] (https://drive.google.com/file/d/1N39IgLdtxbFRSSXu4Wqd3Mn7AaZO2tax/view?usp=sharing)
+Place model files in `./src/models/`:
 
-Run app from the root folder
+```
+src/models/denoise/denoise_gan.onnx
+src/models/upsample/upsample16_gan_500.onnx
+src/models/upsample/upsample48_gan_500.onnx
+```
 
-`python app.py`
+App will be available at `http://localhost:5000`.
 
-You will then be able to access it at localhost:5000
+## Deployment
 
-## Deployment 
+The app is deployed on an **Azure Linux VM** with GitHub Actions CI/CD and is accessible at [https://speechenhance.com](https://speechenhance.com).
 
-The application can deployed at AWS Lightsail containers using Docker and this [tutorial] (https://aws.amazon.com/blogs/aws/lightsail-containers-an-easy-way-to-run-your-containers-in-the-cloud/). 
+### Stack
+
+- **Azure VM** (Ubuntu 22.04) — hosts the app
+- **Gunicorn** — WSGI server running on `127.0.0.1:5000`
+- **Nginx** — reverse proxy on port 80/443
+- **Let's Encrypt** — free SSL certificate via certbot
+- **Cloudflare** — DNS, proxy, and DDoS protection
+- **GitHub Actions** — CI/CD pipeline (build → test → deploy)
+
+### CI/CD Pipeline
+
+Every push to `main` triggers three sequential jobs:
+
+1. **Build** — installs Python 3.10 and dependencies
+2. **Test** — runs `pytest tests/` (deploy is blocked if tests fail)
+3. **Deploy** — SSH into VM, pulls latest code, restarts the service
+
+ONNX model files (~0.5 GB) are not stored in git. They are copied to the VM once manually via `scp` and remain there permanently.
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|---|---|
+| `VM_HOST` | Azure VM public IP |
+| `VM_USER` | VM username (`azureuser`) |
+| `VM_SSH_KEY` | SSH private key (full `.pem` contents) |
+
+For full step-by-step deployment instructions see `SpeechEnhanceApp_Deployment_Guide.docx`.
 
 ## Technologies
-Project is created with:
-* Python 3.11.0 
-* Flask==3.0.0
-* Jinja2==3.1.2
-* gunicorn==21.2.0
-* librosa==0.10.1
-* scikit-learn==1.3.2
-* onnx==1.17.0
-* onnxruntime==1.20.1
 
-It was tested in a browser 
-* Microsoft Edge Version 114.0.1823.43 (Official build) (64-bit)
-
+- Python 3.10
+- Flask 3.0.0
+- Gunicorn 21.2.0
+- Jinja2 3.1.2
+- librosa 0.10.1
+- scikit-learn 1.3.2
+- onnxruntime
