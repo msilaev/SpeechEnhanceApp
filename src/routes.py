@@ -8,6 +8,7 @@ from src.upsample16 import Upsample16
 from src.upsample_4_48 import Upsample448
 
 import os
+import time
 import joblib
 from werkzeug.utils import secure_filename
 import matplotlib.pyplot as plt
@@ -57,11 +58,12 @@ def save_spectrum(S, sr, hop_length, output_filename='spectrogram.png', type = "
     plt.tick_params(axis='both', which='minor')  # Minor ticks
 
     plt.tight_layout()
-    
+
     output_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], output_filename)
-    
+
     plt.savefig(output_path, dpi=300, bbox_inches='tight')  # High DPI for better quality
-    
+    plt.close()
+
     return output_path
 
 def process_audio(filename, model_type, output_filename, target_sr):
@@ -120,7 +122,7 @@ def process_audio(filename, model_type, output_filename, target_sr):
         try:
             if flag == 0:
                 processed_audio, input_audio, processing_time, duration = processor.predict(model_path)
-            if flag == 1:
+            elif flag == 1:
                 #print(model_path_48, model_path_16)
                 processed_audio, input_audio, processing_time, duration = processor.predict(model_path_16, model_path_48)
         except Exception as a:
@@ -145,9 +147,9 @@ def file_upload():
 
     if request.method == 'POST':
 
-        file = request.files.get('file') or None
+        file = request.files.get('file')
 
-        if file.filename == '' or (not (file.filename.endswith('.wav') or file.filename.endswith('.flac'))):
+        if not file or file.filename == '' or (not (file.filename.endswith('.wav') or file.filename.endswith('.flac'))):
             return jsonify({'error': 'Please upload a WAV or FLAC file'})
 
         max_file_size = 50 * 1024 * 1024
@@ -275,7 +277,7 @@ def upsample16(filename = "user.wav"):
 
 @app.route('/report/<result>')
 def report(result):
-    return render_template("report.html", result=result)
+    return render_template("report.html", result=result, cache_bust=int(time.time()))
 
 @app.route('/download/<filename>')
 def download_file(filename):

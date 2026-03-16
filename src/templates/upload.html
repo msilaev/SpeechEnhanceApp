@@ -14,7 +14,8 @@
         </div>
     </div>
 
-     <form method="POST"  enctype="multipart/form-data" onsubmit="return validateForm()">
+     <form method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
      <div class="row mt-1">
         <div class="col-md-12">
         <input type="file" name="file" id="fileInput">
@@ -51,7 +52,7 @@
     // Check file size
     var fileSizeMB = selectedFile.size / (1024 * 1024); // Calculate file size in MB
     if (fileSizeMB > 50) {
-        alert("File size exceeds the limit of 10 MB.");
+        alert("File size exceeds the limit of 50 MB.");
         return false; // Prevent form submission if file size exceeds 10 MB
     }
 

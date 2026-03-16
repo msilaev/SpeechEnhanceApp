@@ -28,22 +28,22 @@
         <!-- Original Audio -->
         <div class="col-md-6">
             <label for="user-audio" style="font-size: 18px; display: block;">Original Audio</label>
-            <audio id="user-audio" controls style="width: 100%; margin-bottom: 20px;">
-                <source src="{{ url_for('download_file', filename='user.wav') }}" type="audio/wav">
+            <audio id="user-audio" controls style="width: 100%; margin-bottom: 20px;"
+                   src="{{ url_for('download_file', filename='user.wav') }}?v={{ cache_bust }}">
                 Your browser does not support the audio element.
             </audio>
-            <img src="{{ url_for('download_file', filename='spectrogram_original.png') }}" 
+            <img src="{{ url_for('download_file', filename='spectrogram_original.png') }}?v={{ cache_bust }}"
             alt="Original Audio Spectrogram" style="width: 100%; margin-top: 10px;">
         </div>
     
         <!-- Processed Audio -->
         <div class="col-md-6">
             <label for="processed-audio" style="font-size: 18px; display: block;">Processed Audio</label>
-            <audio id="processed-audio" controls style="width: 100%; margin-bottom: 20px;">
-                <source src="{{ url_for('download_file', filename='processed.wav') }}" type="audio/wav">
+            <audio id="processed-audio" controls style="width: 100%; margin-bottom: 20px;"
+                   src="{{ url_for('download_file', filename='processed.wav') }}?v={{ cache_bust }}">
                 Your browser does not support the audio element.
             </audio>
-            <img src="{{ url_for('download_file', filename='spectrogram_processed.png') }}" 
+            <img src="{{ url_for('download_file', filename='spectrogram_processed.png') }}?v={{ cache_bust }}"
             alt="Processed Audio Spectrogram" style="width: 100%; margin-top: 10px;">
         </div>
     </div>
