@@ -33,9 +33,11 @@
                 Your browser does not support the audio element.
             </audio>
             <img src="{{ url_for('download_file', filename='spectrogram_original.png') }}?v={{ cache_bust }}"
-            alt="Original Audio Spectrogram" style="width: 100%; margin-top: 10px;">
+                 alt="Original Audio Spectrogram" style="width: 100%; margin-top: 10px;">
+            <img src="{{ url_for('download_file', filename='mel_energy_original.png') }}?v={{ cache_bust }}"
+                 alt="Original Mel Energy" style="width: 100%; margin-top: 10px;">
         </div>
-    
+
         <!-- Processed Audio -->
         <div class="col-md-6">
             <label for="processed-audio" style="font-size: 18px; display: block;">Processed Audio</label>
@@ -44,7 +46,9 @@
                 Your browser does not support the audio element.
             </audio>
             <img src="{{ url_for('download_file', filename='spectrogram_processed.png') }}?v={{ cache_bust }}"
-            alt="Processed Audio Spectrogram" style="width: 100%; margin-top: 10px;">
+                 alt="Processed Audio Spectrogram" style="width: 100%; margin-top: 10px;">
+            <img src="{{ url_for('download_file', filename='mel_energy_processed.png') }}?v={{ cache_bust }}"
+                 alt="Processed Mel Energy" style="width: 100%; margin-top: 10px;">
         </div>
     </div>
     
