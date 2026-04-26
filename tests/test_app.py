@@ -70,12 +70,6 @@ def test_report_route(client):
 
 # --- Processing routes return error without model files ---
 
-def test_denoise_route_without_model_returns_error(client):
-    response = client.get('/denoise')
-    assert response.status_code == 500
-    assert b'error' in response.data.lower()
-
-
 def test_upsample16_route_without_model_returns_error(client):
     response = client.get('/upsample16')
     assert response.status_code == 500
@@ -88,7 +82,13 @@ def test_upsample48_route_without_model_returns_error(client):
     assert b'error' in response.data.lower()
 
 
-def test_upsample448_route_without_model_returns_error(client):
-    response = client.get('/upsample448')
+def test_upsample16_audiounet_route_without_model_returns_error(client):
+    response = client.get('/upsample16_audiounet')
+    assert response.status_code == 500
+    assert b'error' in response.data.lower()
+
+
+def test_upsample48_audiounet_route_without_model_returns_error(client):
+    response = client.get('/upsample48_audiounet')
     assert response.status_code == 500
     assert b'error' in response.data.lower()

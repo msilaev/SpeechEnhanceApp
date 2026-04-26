@@ -18,8 +18,14 @@ _model_files = {
     'upsample16_audiounet': 'upsample16_audiounet_500.onnx',
     'upsample48_audiounet': 'upsample48_audiounet_500.onnx',
 }
+def _load_session(path):
+    try:
+        return ort.InferenceSession(path)
+    except Exception:
+        return None
+
 app.config['ONNX_SESSIONS'] = {
-    name: ort.InferenceSession(os.path.join(app.root_path, app.config['MODEL_FOLDER'], fname))
+    name: _load_session(os.path.join(app.root_path, app.config['MODEL_FOLDER'], fname))
     for name, fname in _model_files.items()
 }
 
