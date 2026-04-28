@@ -39,3 +39,10 @@ credentials.json
 *.pem
 
 *.docx
+
+# Terraform state and local secrets
+infra/terraform.tfvars
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/terraform.tfstate
+infra/terraform.tfstate.backup

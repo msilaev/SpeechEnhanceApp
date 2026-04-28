@@ -1,0 +1,11 @@
+# Copy to terraform.tfvars and fill in values (terraform.tfvars is gitignored)
+
+location            = "northeurope"
+resource_group_name = "speechenhance-rg"
+vm_size             = "Standard_B2s"
+admin_username      = "azureuser"
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+github_repo         = "https://github.com/msilaev/SpeechEnhanceApp.git"
+
+# Generate with: python3 -c "import secrets; print(secrets.token_hex(32))"
+secret_key = "replace-with-generated-key"
