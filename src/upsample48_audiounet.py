@@ -14,15 +14,18 @@ class Upsample48AudioUnet:
     def __init__(self, audio_data):
         self.y = audio_data
 
-    def predict(self, ort_session):
+    def predict(self, ort_session, skip_decimate=False):
 
         x_noisy = self.y
 
         padding_needed = PATCH_SIZE - (x_noisy.shape[0] % PATCH_SIZE)
         x_noisy = np.pad(x_noisy, (0, padding_needed), 'constant', constant_values=(0, 0))
 
-        x_noisy_spline = decimate(x_noisy, 3)
-        x_noisy_spline = self.spline_up(x_noisy_spline, 3)
+        if skip_decimate:
+            x_noisy_spline = self.spline_up(x_noisy, 3)
+        else:
+            x_noisy_spline = decimate(x_noisy, 3)
+            x_noisy_spline = self.spline_up(x_noisy_spline, 3)
 
         n_patches = x_noisy_spline.shape[0] // PATCH_SIZE
 

@@ -13,7 +13,28 @@
             </div>
         </div>
            
-    <!-- Download Button -->    
+    <!-- Classification result -->
+    {% if classification %}
+    {% set is_real = classification.label == 'real' %}
+    {% set pct = (classification.p_real * 100) | round(1) %}
+    <div style="width:100%; margin-top:16px;">
+        <div class="p-3 rounded" style="background:{{ '#d4edda' if is_real else '#fff3cd' }}; border: 1px solid {{ '#c3e6cb' if is_real else '#ffc107' }};">
+            <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:12px;">
+                <span style="font-size:20px; font-weight:600; color:{{ '#155724' if is_real else '#856404' }};">
+                    {{ 'Real' if is_real else 'Enhanced (upsampled)' }}
+                </span>
+                <span style="font-size:15px; color:#555;">
+                    P(real) = {{ pct }}% &nbsp;|&nbsp; {{ classification.n_windows }} window{{ 's' if classification.n_windows != 1 else '' }}
+                </span>
+            </div>
+            <div style="background:#e9ecef; border-radius:4px; height:14px; margin-top:10px;">
+                <div style="background:{{ '#28a745' if is_real else '#ffc107' }}; width:{{ pct }}%; height:14px; border-radius:4px;"></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Download Button -->
     <div class="row mt-4">
         <div class="col-md-12 text-center">
             <a class="btn btn-secondary btn-lg px-5 py-3" 
@@ -24,31 +45,47 @@
       
     </div>
 
-    <div class="row mt-5 align-items-center text-center">
-        <!-- Original Audio -->
-        <div class="col-md-6">
-            <label for="user-audio" style="font-size: 18px; display: block;">Original Audio</label>
-            <audio id="user-audio" controls style="width: 100%; margin-bottom: 20px;"
+    <div class="row mt-5 align-items-start text-center">
+        <!-- Uploaded Audio -->
+        <div class="col-md-4">
+            <label style="font-size: 18px; display: block;">Uploaded Audio</label>
+            <audio controls style="width: 100%; margin-bottom: 20px;"
+                   src="{{ url_for('download_file', filename='original.wav') }}?v={{ cache_bust }}">
+                Your browser does not support the audio element.
+            </audio>
+            <img src="{{ url_for('download_file', filename='spectrogram_uploaded.png') }}?v={{ cache_bust }}"
+                 alt="Uploaded Spectrogram" style="width: 100%; margin-top: 10px;">
+        </div>
+
+        <!-- Model Input (LR) -->
+        <div class="col-md-4">
+            <label style="font-size: 18px; display: block;">Model Input (LR)</label>
+            <audio controls style="width: 100%; margin-bottom: 20px;"
                    src="{{ url_for('download_file', filename='user.wav') }}?v={{ cache_bust }}">
                 Your browser does not support the audio element.
             </audio>
             <img src="{{ url_for('download_file', filename='spectrogram_original.png') }}?v={{ cache_bust }}"
-                 alt="Original Audio Spectrogram" style="width: 100%; margin-top: 10px;">
-            <img src="{{ url_for('download_file', filename='mel_energy_original.png') }}?v={{ cache_bust }}"
-                 alt="Original Mel Energy" style="width: 100%; margin-top: 10px;">
+                 alt="Model Input Spectrogram" style="width: 100%; margin-top: 10px;">
         </div>
 
-        <!-- Processed Audio -->
-        <div class="col-md-6">
-            <label for="processed-audio" style="font-size: 18px; display: block;">Processed Audio</label>
-            <audio id="processed-audio" controls style="width: 100%; margin-bottom: 20px;"
+        <!-- Model Output (HR) -->
+        <div class="col-md-4">
+            <label style="font-size: 18px; display: block;">Model Output (HR)</label>
+            <audio controls style="width: 100%; margin-bottom: 20px;"
                    src="{{ url_for('download_file', filename='processed.wav') }}?v={{ cache_bust }}">
                 Your browser does not support the audio element.
             </audio>
             <img src="{{ url_for('download_file', filename='spectrogram_processed.png') }}?v={{ cache_bust }}"
-                 alt="Processed Audio Spectrogram" style="width: 100%; margin-top: 10px;">
-            <img src="{{ url_for('download_file', filename='mel_energy_processed.png') }}?v={{ cache_bust }}"
-                 alt="Processed Mel Energy" style="width: 100%; margin-top: 10px;">
+                 alt="Model Output Spectrogram" style="width: 100%; margin-top: 10px;">
+        </div>
+    </div>
+
+    <!-- Combined Mel Energy -->
+    <div class="row mt-4">
+        <div class="col-md-12 text-center">
+            <label style="font-size: 18px; display: block;">Mel Energy</label>
+            <img src="{{ url_for('download_file', filename='mel_energy_combined.png') }}?v={{ cache_bust }}"
+                 alt="Mel Energy Comparison" style="width: 80%; margin-top: 10px;">
         </div>
     </div>
     

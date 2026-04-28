@@ -10,60 +10,224 @@
 
     <div class="row mt-1">
         <div class="col-md-12">
-    <h2>Upload audio file in WAV or FLAC format</h2>
+            <h2>Upload audio file in WAV or FLAC format</h2>
         </div>
     </div>
 
-     <form method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+    <form method="POST" enctype="multipart/form-data" id="uploadForm" onsubmit="return validateForm()">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-     <div class="row mt-1">
+        <div class="row mt-1">
+            <div class="col-md-12">
+                <input type="file" name="file" id="fileInput" accept=".wav,.flac">
+            </div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-md-12">
+                <input type="submit" value="Upload">
+            </div>
+        </div>
+    </form>
+
+    <hr style="width:100%; margin-top:24px; margin-bottom:16px;">
+
+    <div class="row mt-1">
         <div class="col-md-12">
-        <input type="file" name="file" id="fileInput">
+            <h4>Or record from microphone</h4>
         </div>
     </div>
 
-     <div class="row mt-1">
-        <div class="col-md-12">
-        <input type="submit" value="Upload">
+    <div id="mic-unavailable" style="display:none; color:#888;">
+        Microphone access is not supported in this browser.
+    </div>
+
+    <div id="mic-controls">
+        <div class="row mt-2">
+            <div class="col-md-12 d-flex align-items-center" style="gap:16px;">
+                <label style="margin:0; font-weight:500;">Sample rate:</label>
+                <label style="margin:0;">
+                    <input type="radio" name="recSr" value="16000"> 16 kHz
+                </label>
+                <label style="margin:0;">
+                    <input type="radio" name="recSr" value="48000" checked> 48 kHz
+                </label>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-12 d-flex align-items-center" style="gap:12px;">
+                <button id="recordBtn" class="btn btn-danger" onclick="startRecording()">&#9679; Start Recording</button>
+                <button id="stopBtn" class="btn btn-secondary" onclick="stopRecording()" disabled>&#9632; Stop</button>
+                <span id="recTimer" style="font-family:monospace; font-size:1.1em; min-width:55px;"></span>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-12">
+                <span id="recStatus" style="color:#555;"></span>
+            </div>
         </div>
     </div>
-    </form>
 
     <div id="errorMessage" style="display: none; color: red;"></div>
 
+</div>
 </body>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-   function validateForm() {
+// ── File upload validation ────────────────────────────────────────────────────
+function validateForm() {
     var fileInput = document.getElementById('fileInput');
-    var allowedExtensions = /(\.wav|\.flac)$/i; // Regular expression to match .wav extension
-
     if (fileInput.files.length === 0) {
-        alert("Please choose a file.");
-        return false;  // Prevent form submission if no file chosen
+        alert("Please choose a file or record from the microphone.");
+        return false;
     }
-
-    // Get the selected file
     var selectedFile = fileInput.files[0];
-
-    // Check file size
-    var fileSizeMB = selectedFile.size / (1024 * 1024); // Calculate file size in MB
-    if (fileSizeMB > 50) {
+    if (selectedFile.size / (1024 * 1024) > 50) {
         alert("File size exceeds the limit of 50 MB.");
-        return false; // Prevent form submission if file size exceeds 10 MB
+        return false;
     }
-
-    // Check the file extension against the allowed extensions
-    if (!allowedExtensions.test(selectedFile.name)) {
+    if (!/\.(wav|flac)$/i.test(selectedFile.name)) {
         alert("Please select a WAV or FLAC file.");
-        return false; // Prevent form submission if file extension is not .wav
+        return false;
+    }
+    return true;
+}
+
+// ── Microphone recording ──────────────────────────────────────────────────────
+if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    document.getElementById('mic-unavailable').style.display = 'block';
+    document.getElementById('mic-controls').style.display  = 'none';
+}
+
+let audioContext, scriptProcessor, sourceNode, micStream;
+let recordedChunks = [];
+let timerInterval   = null;
+let recordingStart  = null;
+
+async function startRecording() {
+    try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch (err) {
+        document.getElementById('recStatus').textContent = 'Microphone access denied: ' + err.message;
+        return;
     }
 
-    // File is chosen, within size limit, and has a .wav extension
-    return true; // Allow form submission
+    audioContext    = new AudioContext();
+    sourceNode      = audioContext.createMediaStreamSource(micStream);
+    scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+    recordedChunks  = [];
+
+    scriptProcessor.onaudioprocess = function(e) {
+        recordedChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+    };
+
+    sourceNode.connect(scriptProcessor);
+    scriptProcessor.connect(audioContext.destination);
+
+    // UI feedback
+    document.getElementById('recordBtn').disabled = true;
+    document.getElementById('stopBtn').disabled   = false;
+    document.getElementById('recStatus').textContent = 'Recording…';
+    document.getElementById('recTimer').textContent  = '0:00';
+
+    recordingStart = Date.now();
+    timerInterval = setInterval(function() {
+        var elapsed = Math.floor((Date.now() - recordingStart) / 1000);
+        var m = Math.floor(elapsed / 60);
+        var s = String(elapsed % 60).padStart(2, '0');
+        document.getElementById('recTimer').textContent = m + ':' + s;
+    }, 500);
+}
+
+function resampleLinear(pcm, fromRate, toRate) {
+    if (fromRate === toRate) return pcm;
+    var ratio  = fromRate / toRate;
+    var newLen = Math.round(pcm.length / ratio);
+    var out    = new Float32Array(newLen);
+    for (var i = 0; i < newLen; i++) {
+        var pos = i * ratio;
+        var idx = Math.floor(pos);
+        var frac = pos - idx;
+        var a = pcm[Math.min(idx,     pcm.length - 1)];
+        var b = pcm[Math.min(idx + 1, pcm.length - 1)];
+        out[i] = a + frac * (b - a);
+    }
+    return out;
+}
+
+function stopRecording() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+
+    scriptProcessor.disconnect();
+    sourceNode.disconnect();
+    micStream.getTracks().forEach(function(t) { t.stop(); });
+
+    var nativeSr = audioContext.sampleRate;
+    audioContext.close();
+
+    // Flatten Float32 chunks → single array
+    var totalLen = recordedChunks.reduce(function(a, b) { return a + b.length; }, 0);
+    var pcm = new Float32Array(totalLen);
+    var offset = 0;
+    recordedChunks.forEach(function(chunk) { pcm.set(chunk, offset); offset += chunk.length; });
+
+    // Resample to the selected target rate
+    var targetSr = parseInt(document.querySelector('input[name="recSr"]:checked').value);
+    pcm = resampleLinear(pcm, nativeSr, targetSr);
+
+    // Encode as 16-bit PCM WAV at target rate
+    var wav  = encodeWAV(pcm, targetSr);
+    var blob = new Blob([wav], { type: 'audio/wav' });
+    var sizekb = (blob.size / 1024).toFixed(1);
+
+    // Inject into the file input so the existing form handles the upload
+    var file = new File([blob], 'recording.wav', { type: 'audio/wav' });
+    var dt   = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('fileInput').files = dt.files;
+
+    document.getElementById('recordBtn').disabled = false;
+    document.getElementById('stopBtn').disabled   = true;
+    document.getElementById('recTimer').textContent = '';
+    document.getElementById('recStatus').textContent =
+        'Ready: recording.wav (' + sizekb + ' KB, ' + targetSr / 1000 + ' kHz). Click Upload above to process.';
+}
+
+// ── WAV encoder (RIFF / PCM 16-bit mono) ─────────────────────────────────────
+function encodeWAV(samples, sampleRate) {
+    var dataLen    = samples.length * 2;   // 2 bytes per sample (int16)
+    var buffer     = new ArrayBuffer(44 + dataLen);
+    var view       = new DataView(buffer);
+
+    writeStr(view,  0, 'RIFF');
+    view.setUint32( 4, 36 + dataLen,   true);
+    writeStr(view,  8, 'WAVE');
+    writeStr(view, 12, 'fmt ');
+    view.setUint32(16, 16,             true);   // PCM chunk size
+    view.setUint16(20,  1,             true);   // PCM format
+    view.setUint16(22,  1,             true);   // mono
+    view.setUint32(24, sampleRate,     true);
+    view.setUint32(28, sampleRate * 2, true);   // byte rate
+    view.setUint16(32,  2,             true);   // block align
+    view.setUint16(34, 16,             true);   // bits per sample
+    writeStr(view, 36, 'data');
+    view.setUint32(40, dataLen,        true);
+
+    var out = 44;
+    for (var i = 0; i < samples.length; i++) {
+        var s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(out, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        out += 2;
+    }
+    return buffer;
+}
+
+function writeStr(view, offset, str) {
+    for (var i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+    }
 }
 </script>
 {% endblock %}
