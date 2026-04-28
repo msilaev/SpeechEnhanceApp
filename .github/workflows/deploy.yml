@@ -50,7 +50,7 @@ jobs:
 
       - name: Create required directories
         run: |
-          mkdir -p src/models/upsample src/models/denoise uploads
+          mkdir -p src/models uploads
 
       - name: Run tests
         run: pytest tests/ -v
