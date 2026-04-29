@@ -29,11 +29,20 @@ python3.10 -m venv "$VENV"
 "$VENV/bin/pip" install -q --upgrade pip
 "$VENV/bin/pip" install -q -r "$APP_DIR/requirements.txt"
 
-echo "=== 4. Directories ==="
+echo "=== 4. Swap (2 GB — prevents OOM when loading 4 ONNX models) ==="
+if ! swapon --show | grep -q /swapfile; then
+    sudo fallocate -l 2G /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+fi
+
+echo "=== 5. Directories ==="
 mkdir -p "$APP_DIR/src/models"
 mkdir -p "$APP_DIR/src/uploads"
 
-echo "=== 5. Systemd service ==="
+echo "=== 6. Systemd service ==="
 sudo tee /etc/systemd/system/speechenhance.service > /dev/null <<EOF
 [Unit]
 Description=SpeechEnhanceApp
@@ -44,19 +53,19 @@ User=$USER
 WorkingDirectory=$APP_DIR
 Environment="PATH=$VENV/bin"
 Environment="SECRET_KEY=$SECRET_KEY"
-ExecStart=$VENV/bin/gunicorn --workers 2 --bind 127.0.0.1:5000 --timeout 120 app:app
+ExecStart=$VENV/bin/gunicorn --workers 1 --bind 127.0.0.1:5000 --timeout 120 app:app
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-echo "=== 6. Sudoers (CI/CD restart) ==="
+echo "=== 7. Sudoers (CI/CD restart) ==="
 echo "$USER ALL=(ALL) NOPASSWD: /bin/systemctl restart speechenhance" \
     | sudo tee /etc/sudoers.d/speechenhance > /dev/null
 sudo chmod 440 /etc/sudoers.d/speechenhance
 
-echo "=== 7. Nginx ==="
+echo "=== 8. Nginx ==="
 sudo tee /etc/nginx/sites-available/speechenhance > /dev/null <<'EOF'
 server {
     listen 80;
@@ -75,7 +84,7 @@ sudo nginx -t
 sudo systemctl enable nginx
 sudo systemctl restart nginx
 
-echo "=== 8. Start service ==="
+echo "=== 9. Start service ==="
 sudo systemctl daemon-reload
 sudo systemctl enable speechenhance
 sudo systemctl start speechenhance
